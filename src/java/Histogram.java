@@ -30,7 +30,7 @@ public class Histogram {
 
 	public void fill(Cthead cthead, int slice, int direction) {
 		BufferedImage image = cthead.getImage(slice, direction);
-		byte imageData[] = Functions.getImageData(image);
+		byte imageData[] = FunctionsCt.getImageData(image);
 
 		int stop = (direction == 1) ? 256 : 113;
 		stop *= 256*3;

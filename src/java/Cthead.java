@@ -8,7 +8,7 @@ import java.awt.event.*;
 import javax.swing.event.*;
 
 public class Cthead {
-	public static final int NEAREST_NEIGHBOUR		= 101;
+	public static final int NEAREST_NEIGHBOUR	= 101;
 	public static final int BILINEAR_INTERPOLATION	= 102;
 	public static final int BICUBIC_INTERPOLATION	= 103;
 
@@ -48,7 +48,7 @@ public class Cthead {
 
 		int i, j, c, k;
         //Obtain pointer to data for fast processing
-        byte[] data = Functions.getImageData(image);
+        byte[] data = FunctionsCt.getImageData(image);
 
         //System.out.println(data);
 
@@ -97,7 +97,7 @@ public class Cthead {
 
 		int i, j, c, k;
         //Obtain pointer to data for fast processing
-        byte[] data = Functions.getImageData(image);
+        byte[] data = FunctionsCt.getImageData(image);
 
         //System.out.println(data);
 
@@ -161,7 +161,7 @@ public class Cthead {
 		BufferedImage newImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_3BYTE_BGR);
 		int i, j, c, k;
 
-		byte[] newData = Functions.getImageData(newImage);
+		byte[] newData = FunctionsCt.getImageData(newImage);
 		double col;
 		short datum;
 		int I, J;
@@ -189,7 +189,7 @@ public class Cthead {
 				}
 				
 				//calculate the colour by performing a mapping from [min,max] -> [0,255]
-				col = Functions.equalizeColourTo255(this, datum);
+				col = FunctionsCt.equalizeColourTo255(this, datum);
 				for (c=0; c<3; c++) {
 					//and now we are looping through the bgr components of the pixel
 					//set the colour component c of pixel (i,j)
@@ -205,7 +205,7 @@ public class Cthead {
 		BufferedImage newImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_3BYTE_BGR);
 		int i, j, c, k;
 
-		byte[] newData = Functions.getImageData(newImage);
+		byte[] newData = FunctionsCt.getImageData(newImage);
 		double col, interpo1, interpo2, interpo3;
 		short v_1, v_2, v_3, v_4;
 		int I, J;
@@ -255,12 +255,12 @@ public class Cthead {
 					v_4 = 0;
 				}
 				
-				interpo1 = Functions.linearInterpolation((double)v_1, (double)v_2, I, (double)i * (double)originalWidth / (double)newWidth, I+1);
-				interpo2 = Functions.linearInterpolation((double)v_3, (double)v_4, I, (double)i * (double)originalWidth / (double)newWidth, I+1);
-				interpo3 = Functions.linearInterpolation(interpo1, interpo2, J, (double)j * (double)originalHeight / (double)newHeight, J+1);
+				interpo1 = FunctionsCt.linearInterpolation((double)v_1, (double)v_2, I, (double)i * (double)originalWidth / (double)newWidth, I+1);
+				interpo2 = FunctionsCt.linearInterpolation((double)v_3, (double)v_4, I, (double)i * (double)originalWidth / (double)newWidth, I+1);
+				interpo3 = FunctionsCt.linearInterpolation(interpo1, interpo2, J, (double)j * (double)originalHeight / (double)newHeight, J+1);
 
 				//calculate the colour by performing a mapping from [min,max] -> [0,255]
-				col = Functions.equalizeColourTo255(this, interpo3);
+				col = FunctionsCt.equalizeColourTo255(this, interpo3);
 				if (col > 250)
 					System.out.println(interpo3 + " -- " +i + ": " + I + " / " + j + ": " + J + " | " + newData[3*i+3*j*newWidth] + ": " + col + " $ " + v_1+ " $ " + v_2+ " $ " + v_3+ " $ " + v_4);
 
@@ -288,7 +288,7 @@ public class Cthead {
 
 		int i, j, c, k;
         //Obtain pointer to data for fast processing
-        byte[] data = Functions.getImageData(image);
+        byte[] data = FunctionsCt.getImageData(image);
 
         //System.out.println(data);
 

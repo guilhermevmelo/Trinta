@@ -6,11 +6,31 @@
     <title>Cliente Bolado</title>
 </head>
 <body>
-
+<!-- http://ctscanner.us-west-2.elasticbeanstalk.com/FileReceiverServlet -->
 <form action="http://localhost:8080/TrabalhoFinalTrinta/FileReceiverServlet" method="post"
-      enctype="multipart/form-data" name="frm">
-    <input type="file" name="cthead">
-    <input type="submit" name="sbmt">
+    enctype="multipart/form-data" name="frm">
+    <label for="ctheadFile">Escolha o dataset do CT (caso deixe em branco, usaremos o do S3)</label>
+    <input type="file" name="ctheadFile" id="ctheadFile">
+    
+    <label for="slice">Fatia a ser renderizada</label>
+    <input type="number" name="slice" id="slice" value="100">
+    
+    <label for="direcao">Escolha a direção</label>
+    <select name="direcao" id="direcao">
+        <option value="3" selected>Frente</option>
+        <option value="1">Cima</option>
+        <option value="2">Lateral</option>
+    </select>
+    
+    <label for="operacao">Escolha a operação a ser realizada</label>
+    <select name="operacao" id="operacao">
+        <option value="1" selected>Obter Imagem</option>
+        <option value="2">Redimensionar com Nearest Neighbour</option>
+        <option value="3">Redimensionar com Bilinear Interpolation</option>
+        <option value="4">Aplicar MIP</option>
+    </select>
+    
+    <input type="submit" name="sbmt" value="Obter Imagem">
 </form>
 
 </body>
