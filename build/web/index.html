@@ -1,37 +1,184 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cliente Bolado</title>
+    <title>Volume Renderer in the Cloud</title>
+    
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link href="style.css" rel="stylesheet" type="text/css">
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <script src="main.js"></script>
 </head>
 <body>
+    <section id="Intro">
+        <h1>Volume Renderer in the Cloud</h1>
+        <p>Esta Aplicação Renderiza seções no eixo de sua escolha de modelos 3D.
+            Alguns modelos de exemplo podem ser obtidos no <a href="https://graphics.stanford.edu/data/voldata/" title="" target="_blank">acervo da Universiade de Stanford</a>. Os arquivos de lá obtidos estão divididos em fatias e precisam ser concatenados em um só para que nosso renderer interprete o volume como um todo. Para facilitar, nós já o fizemos e os fornecemos nos links abaixo (disponíveis no S3).</p>
+        <div class="alignCenter">
+            <article class="volumeLink">
+                <table>
+                    <tr>
+                        <th colspan="2"><a href="https://s3-us-west-2.amazonaws.com/elasticbeanstalk-us-west-2-737851462034/CThead">CThead</a></th>
+                    <tr>
+                        <th>Tamanho</th>
+                        <td>14.1MB</td>
+                    </tr>
+                    <tr>
+                        <th>x</th>
+                        <td>256</td>
+                    </tr>
+                    <tr>
+                        <th>y</th>
+                        <td>256</td>
+                    </tr>
+                    <tr>
+                        <th>z</th>
+                        <td>113</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><span class="green">não precisa de correção</span></td>
+                    </tr>
+                </table>
+            </article>
+            <article class="volumeLink">
+                <table>
+                    <tr>
+                        <th colspan="2"><a href="https://s3-us-west-2.amazonaws.com/elasticbeanstalk-us-west-2-737851462034/MRbrain">MRbrain</a></th>
+                    <tr>
+                        <th>Tamanho</th>
+                        <td>13.6MB</td>
+                    </tr>
+                    <tr>
+                        <th>x</th>
+                        <td>256</td>
+                    </tr>
+                    <tr>
+                        <th>y</th>
+                        <td>256</td>
+                    </tr>
+                    <tr>
+                        <th>z</th>
+                        <td>109</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><span class="red">precisa de correção</span></td>
+                    </tr>
+                </table>
+            </article>
+            <article class="volumeLink">
+                <table>
+                    <tr>
+                        <th colspan="2"><a href="https://s3-us-west-2.amazonaws.com/elasticbeanstalk-us-west-2-737851462034/bunny">bunny</a></th>
+                    <tr>
+                        <th>Tamanho</th>
+                        <td>189.3MB</td>
+                    </tr>
+                    <tr>
+                        <th>x</th>
+                        <td>512</td>
+                    </tr>
+                    <tr>
+                        <th>y</th>
+                        <td>512</td>
+                    </tr>
+                    <tr>
+                        <th>z</th>
+                        <td>360</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><span class="red">precisa de correção</span></td>
+                    </tr>
+                </table>
+            </article>
+        </div>
+        <p>As imagens que podem ser obtidas, por seção, são:</p>
+        <ul>
+            <li>Como consta no volume.</li>
+            <li>Projeção de Máxima Intensidade (MIP) no eixo escolhido. (Independe da fatia)</li>
+            <li>Redimensionada com uma das seguintes técnicas:
+                <ul>
+                    <li>Amostragem por Vizinho mais próximo (Nearest Neighbour Sampling): obtém uma imagem mais pixelizada.</li>
+                    <li title="Contém alguns bugs">Interpolação Bilinear (Bilinear Interpolation): obtém uma imagem mais suave.</li>
+                </ul>
+            </li>
+            <li>Aplicada equalização do histograma.</li>
+        </ul>
+        
+    </section>
+    <section id="App">
+        <div id="ResponseContainer">
+            <div class="progress"></div>
+            <img src="" alt="" id="ResponseImg">
+        </div>
+    
+    <div id="CoreContainer">
+    
 <!-- http://ctscanner.us-west-2.elasticbeanstalk.com/FileReceiverServlet -->
-<form action="http://localhost:8080/TrabalhoFinalTrinta/FileReceiverServlet" method="post"
-    enctype="multipart/form-data" name="frm">
-    <label for="ctheadFile">Escolha o dataset do CT (caso deixe em branco, usaremos o do S3)</label>
-    <input type="file" name="ctheadFile" id="ctheadFile">
+<form action="FileReceiverServlet" method="post"
+    enctype="multipart/form-data" name="frm" id="frm">
     
-    <label for="slice">Fatia a ser renderizada</label>
-    <input type="number" name="slice" id="slice" value="100">
     
+    
+    <h3>Informações sobre o Dataset</h3>
+        
+    <fieldset>
+        
+        <label for="ctheadFile">Escolha o dataset do Volume</label>
+        <input type="file" name="ctheadFile" id="ctheadFile">
+        
+    </fieldset>
+    
+    <fieldset>
+        <label>Corrigir Ordenação (Endianness)?</label>
+        <input type="radio" name="endianness" id="endianness_sim" value="true"><label for="endianness_sim">Sim</label>
+        <input type="radio" name="endianness" id="endianness_nao" value="false" checked><label for="endianness_nao">Não</label>
+    </fieldset>
+    
+    <fieldset>
+        <label>Digite as dimensões do dataset</label><br>
+        <label for="x">x:</label>
+        <input type="number" name="x" id="x" value="256">
+        <label for="y">y:</label>
+        <input type="number" name="y" id="y" value="256">
+        <label for="z">z:</label>
+        <input type="number" name="z" id="z" value="113">
+    </fieldset>
+    
+    <h3>Sobre a renderização</h3>
+    <fieldset>
+        
     <label for="direcao">Escolha a direção</label>
     <select name="direcao" id="direcao">
-        <option value="3" selected>Frente</option>
-        <option value="1">Cima</option>
-        <option value="2">Lateral</option>
+        <option value="3" selected>x</option>
+        <option value="1">y</option>
+        <option value="2">z</option>
     </select>
+    </fieldset>
     
+    <fieldset>
+    <label for="slice">Fatia a ser renderizada</label>
+    <input type="number" name="slice" id="slice" value="100" min="1" max="256">
+    </fieldset>
+    
+    <fieldset>
     <label for="operacao">Escolha a operação a ser realizada</label>
     <select name="operacao" id="operacao">
         <option value="1" selected>Obter Imagem</option>
         <option value="2">Redimensionar com Nearest Neighbour</option>
         <option value="3">Redimensionar com Bilinear Interpolation</option>
         <option value="4">Aplicar MIP</option>
+        <option value="5">Aplicar Equalização do Histograma</option>
     </select>
+    </fieldset>
     
+    <fieldset>
     <input type="submit" name="sbmt" value="Obter Imagem">
+    </fieldset>
 </form>
-
+</div>
+    
+    </section>
 </body>
 </html>

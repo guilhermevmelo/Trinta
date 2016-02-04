@@ -22,7 +22,7 @@ public class Volume {
         return X;
     }
 
-    public Volume(DataInputStream file, short x, short y, short z) throws IOException {
+    public Volume(DataInputStream file, short x, short y, short z, boolean correctEndianness) throws IOException {
         int i, j, k; //loop through the 3D data set
 
         this.X = x;
@@ -43,7 +43,7 @@ public class Volume {
                     //because the Endianess is wrong, it needs to be read byte at a time and swapped
                     b1 = ((int) file.readByte()) & 0xff; //the 0xff is because Java does not have unsigned types (C++ is so much easier!)
                     b2 = ((int) file.readByte()) & 0xff; //the 0xff is because Java does not have unsigned types (C++ is so much easier!)
-                    read = (short) ((b1 << 8) | b2);//((b2<<8) | b1); //and swizzle the bytes around
+                    read = (short) (correctEndianness ? ((b1 << 8) | b2) : ((b2<<8) | b1)); //and swizzle the bytes around
                     if (read < min) min = read; //update the minimum
                     if (read > max) max = read; //update the maximum
                     volume[k][j][i] = read; //put the short into memory (in C++ you can replace all this code with one fread)

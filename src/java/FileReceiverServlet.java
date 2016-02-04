@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.Base64;
 import javax.imageio.ImageIO;
 
 import javax.servlet.ServletException;
@@ -52,10 +53,13 @@ public class FileReceiverServlet extends HttpServlet {
         int slice = 100;//Integer.parseInt(request.getParameter("slice"));
         int direction = 1;
         int operacao = 1;
-        BufferedImage img = new BufferedImage(100,100,BufferedImage.TYPE_3BYTE_BGR);
+        short x = 0, y = 0, z = 0;
+        BufferedImage img = null;
         boolean temArquivo = false;
-        Cthead cthead = null;//new Cthead(new DataInputStream(new BufferedInputStream(new FileInputStream(new File("https://s3-us-west-2.amazonaws.com/elasticbeanstalk-us-west-2-737851462034/CThead")))));
-                
+        boolean corrigirEndianness = false;
+        Volume volume = null;//new Cthead(new DataInputStream(new BufferedInputStream(new FileInputStream(new File("https://s3-us-west-2.amazonaws.com/elasticbeanstalk-us-west-2-737851462034/CThead")))));
+        DataInputStream in = null;
+        
         
         try {
             List<FileItem> items = new ServletFileUpload(new DiskFileItemFactory()).parseRequest(request);
@@ -67,12 +71,31 @@ public class FileReceiverServlet extends HttpServlet {
                 if (item.isFormField()) {
                    String fieldname = item.getFieldName();
                     String fieldvalue = item.getString();
-                    if (fieldname.equals("slice")) {
-                        slice = Integer.parseInt(fieldvalue);
-                    } else if (fieldname.equals("direcao")) {
-                        direction = Integer.parseInt(fieldvalue);
-                    }else if (fieldname.equals("operacao")) {
-                        operacao = Integer.parseInt(fieldvalue);
+                    switch (fieldname) {
+                        case "slice":
+                            slice = Integer.parseInt(fieldvalue);
+                            break;
+                        case "direcao":
+                            direction = Integer.parseInt(fieldvalue);
+                            break;
+                        case "operacao":
+                            operacao = Integer.parseInt(fieldvalue);
+                            break;
+                        case "endianness":
+                            corrigirEndianness = Boolean.parseBoolean(fieldvalue);
+                            System.out.println("endianness: " + fieldvalue + " : " + corrigirEndianness);
+                            break;
+                        case "x":
+                            x = Short.parseShort(fieldvalue);
+                            break;
+                        case "y":
+                            y = Short.parseShort(fieldvalue);
+                            break;
+                        case "z":
+                            z = Short.parseShort(fieldvalue);
+                            break;
+                        default:
+                            break;
                     }
                 }   
                 //Se a parte da requisoção é o arquivo
@@ -81,40 +104,49 @@ public class FileReceiverServlet extends HttpServlet {
                     InputStream fileContent = item.getInputStream();
                     File file = File.createTempFile("temp", ".tmp");
                     copyInputStreamToFile(fileContent,file);
-                    DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
-                    cthead = new Cthead(in);
-                    
-                    
-                    
+                    in = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
+                    //cthead = new Cthead(in);
                     //Gui window = new Gui(cthead);
 	         }
             }
-            response.setContentType("image/jpeg");
-//            if (!temArquivo) {
-//                cthead = new Cthead(new DataInputStream(new BufferedInputStream(new FileInputStream(new File("https://s3-us-west-2.amazonaws.com/elasticbeanstalk-us-west-2-737851462034/CThead")))));
-//                //cthead = new Cthead(new DataInputStream(new BufferedInputStream(new FileInputStream(new File("Users/guilherme/Desktop/Refactored/CThead")))));
-//            }
+            
+            volume = new Volume(in, x, y, z, corrigirEndianness);
 
             switch(operacao) {
                 case 1:
-                    img = cthead.getImage(slice, direction);
+                    img = volume.getImage(slice, direction);
                     break;
                 case 2:
-                    img = cthead.resizeImage(slice, direction, 256, direction == 1 ? 256 : 113, 512, 512, Cthead.NEAREST_NEIGHBOUR);
+                    img = volume.resizeImage(slice, direction, 256, direction == 1 ? 256 : 113, 512, 512, Cthead.NEAREST_NEIGHBOUR);
                     break;
                 case 3:
-                    img = cthead.resizeImage(slice, direction, 256, direction == 1 ? 256 : 113, 512, 512, Cthead.BILINEAR_INTERPOLATION);
+                    img = volume.resizeImage(slice, direction, 256, direction == 1 ? 256 : 113, 512, 512, Cthead.BILINEAR_INTERPOLATION);
                     break;
                 case 4:
-                    img = cthead.maximumIntensityProjection(direction);
+                    img = volume.maximumIntensityProjection(direction);
+                    break;
+                case 5:
+                    VolumeHistogram volumeHistogram = new VolumeHistogram(volume);
+                    volumeHistogram.fill();
+                    VolumeHistogram mapping = volumeHistogram.histogramEqualization(0, 255);
+                    img = volume.equalizeImage(mapping, slice, direction);
                     break;
                 default:
-                    img = cthead.getImage(slice, direction);
+                    img = volume.getImage(slice, direction);
                     
             }
-            
+            response.setContentType("image/jpeg");
+//          
             OutputStream out = response.getOutputStream();
+            
+            Base64.Encoder b64enc = Base64.getEncoder();
+            out = b64enc.wrap(out);
+
             ImageIO.write(img, "jpg", out);
+            
+            //out.write(img.);
+            out.flush();
+            out.close();
         } catch (FileUploadException ex) {
            // Logger.getLogger(FileReceiverServlet.class.getName()).log(Level.SEVERE, null, ex);
         }

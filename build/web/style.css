@@ -1,0 +1,81 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 02-Feb-2016, 16:28:47
+    Author     : guilherme
+*/
+
+body {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.7em;
+    margin: 0;
+    padding: 0;
+}
+
+a {
+    color: background;
+    text-decoration: none;
+    transition: all .5s;
+}
+
+a:hover {
+    color: cadetblue;
+    text-shadow: 0 1px 2px ;
+}
+
+section {
+    margin: 15px;
+}
+
+fieldset {
+    border: none;
+}
+
+label + input {
+    display: box;
+}
+
+#ResponseContainer {
+    float: right;
+    width: 50%;
+}
+
+#CoreContainer {
+    width: 50%;
+    margin-right: 50%;
+}
+
+article.volumeLink {
+    display: inline-block;
+    width: 180px;
+    height: auto;
+    border: 2px solid background;
+    text-align: center;
+}
+
+article.volumeLink table {
+    margin: 0 auto;
+}
+
+.red { color: crimson; }
+
+.green { color: chartreuse; }
+
+.alignCenter { text-align: center;}
+
+.progress {
+    display: block;
+    text-align: center;
+    width: 0;
+    height: 3px;
+    background: red;
+    transition: width .3s;
+}
+.progress.hide {
+    opacity: 0;
+    transition: opacity 1.3s;
+}
